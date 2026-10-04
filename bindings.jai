@@ -34,6 +34,8 @@ HS_INSUFFICIENT_SPACE :: -12;
 
 HS_UNKNOWN_ERROR :: -13;
 
+HS_MAX_PATTERN_COUNT :: 1000000;
+
 HS_EXT_FLAG_MIN_OFFSET :: 1;
 
 HS_EXT_FLAG_MAX_OFFSET :: 2;
@@ -71,6 +73,8 @@ HS_CPU_FEATURES_AVX2 :: 1 << 2;
 HS_CPU_FEATURES_AVX512 :: 1 << 3;
 
 HS_CPU_FEATURES_AVX512VBMI :: 1 << 4;
+
+HS_PLATFORM_ALL :: 0xabcdef11abcdef00;
 
 HS_TUNE_FAMILY_GENERIC :: 0;
 
@@ -1398,7 +1402,7 @@ hs_scratch_t :: hs_scratch;
 * @param from
 *      - If a start of match flag is enabled for the current pattern, this
 *        argument will be set to the start of match for the pattern assuming
-*        that that start of match value lies within the current 'start of match
+*        that the start of match value lies within the current 'start of match
 *        horizon' chosen by one of the SOM_HORIZON mode flags.
 
 *      - If the start of match value lies outside this horizon (possible only

@@ -4,8 +4,6 @@ Jai bindings for [Hyperscan](https://github.com/intel/hyperscan) v5.4.2, Intel's
 
 The bindings are generated from Hyperscan's public headers (`hs_common.h`, `hs_compile.h`, `hs_runtime.h`) with Jai's `Bindings_Generator`, and `generate.jai` also builds the library from source using CMake.
 
-v5.4.2 is pinned on purpose, since it is part of the last open-source (BSD) line of Hyperscan.
-
 ## Platform support
 
 | Platform        | Status                                                                 |
@@ -15,7 +13,7 @@ v5.4.2 is pinned on purpose, since it is part of the last open-source (BSD) line
 | ARM (any OS)    | Not supported by Intel Hyperscan. [Vectorscan](https://github.com/VectorCamp/vectorscan) is the fork that adds ARM, but this script does not use it yet. |
 | Windows         | Not implemented in `generate.jai` yet                                  |
 
-The library is built with `-march=native`, so **the resulting binary is tuned for the CPU it was built on**.
+The library is built with `-march=native`, so **the resulting binary is tuned for the CPU it was built on**. (Hyperscan's 'fat runtime' is turned off in this script.)
 
 ## Setup
 
@@ -92,7 +90,7 @@ return match_count;
 
 ## License and more information
 
-Hyperscan v5.4.2 is released under the [3-clause BSD license](https://github.com/intel/hyperscan/blob/master/LICENSE).
+Hyperscan is released under the [3-clause BSD license](https://github.com/intel/hyperscan/blob/master/LICENSE).
 
 These bindings are released under the [MIT license](https://github.com/vrcamillo/jai-tracy/blob/main/LICENSE).
 
