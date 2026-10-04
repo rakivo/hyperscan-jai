@@ -53,16 +53,12 @@ Pass these after the `-` that separates them from the compiler's own arguments:
 
 `bindings.jai` is regenerated on every run, and its footer depends on whether you built static or shared. Run `generate.jai` in the mode you intend to link.
 
-## Using the module
+## Usage
 
 ```jai
 #import "Hyperscan";
 // or #import,dir "modules/Hyperscan";
-```
 
-Check the generated `bindings.jai` for the exact names and signatures. A minimal block-mode scan looks like this:
-
-```jai
 db:  *hs_database_t;
 err: *hs_compile_error_t;
 if hs_compile("foo.*bar", HS_FLAG_DOTALL, HS_MODE_BLOCK, null, *db, *err) != HS_SUCCESS {
