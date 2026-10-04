@@ -1,6 +1,6 @@
 # Hyperscan bindings for Jai
 
-Jai bindings for [Hyperscan](https://github.com/intel/hyperscan) v5.4.2, Intel's high-performance multiple regex matching library.
+Jai bindings for [Hyperscan](https://github.com/intel/hyperscan), Intel's high-performance multiple regex matching library.
 
 The bindings are generated from Hyperscan's public headers (`hs_common.h`, `hs_compile.h`, `hs_runtime.h`) with Jai's `Bindings_Generator`, and `generate.jai` also builds the library from source using CMake.
 
@@ -20,7 +20,7 @@ The library is built with `-march=native`, so **the resulting binary is tuned fo
 1. Clone the repository with its submodule:
 
    ```shell
-   git submodule update --init --recursive
+   git clone --recursive https://github.com/rakivo/hyperscan-jai
    ```
 
 2. Install the build requirements:
