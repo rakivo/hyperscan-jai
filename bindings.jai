@@ -1883,16 +1883,23 @@ hs_free_scratch :: (scratch: *hs_scratch_t) -> hs_error_t #foreign libhs;
 #scope_file
 
 
+// link_always stops JAI from dropping libraries that no foreign procedure references directly.
 #if OS == .LINUX {
     libhs :: #library,no_dll "linux/libhs";
-    libstdcpp :: #system_library,link_always "libstdc++";
-    libcrypto :: #system_library,link_always "libcrypto";
+    libstdcpp :: #library,no_dll,link_always "linux/libstdc++";
+    libgcc_eh :: #library,no_dll,link_always "linux/libgcc_eh";
+    libgcc    :: #library,no_dll,link_always "linux/libgcc";
     libm      :: #system_library,link_always "libm";
-    libgcc_s  :: #system_library,link_always "libgcc_s";
+    
+    libcrypto :: #library,no_dll,link_always "linux/libcrypto";
+
+    // libcrypto depends on these...
+    libz      :: #library,no_dll,link_always "linux/libz";
+    libzstd   :: #library,no_dll,link_always "linux/libzstd";
+
 } else #if OS == .MACOS {
     libhs :: #library,no_dll "macos/libhs";
     libcpp    :: #system_library,link_always "libc++";
-    libcrypto :: #system_library,link_always "libcrypto";
 } else {
     #assert false;
 }

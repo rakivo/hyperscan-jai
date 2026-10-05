@@ -28,6 +28,7 @@ LIB_BASE_NAME :: "libhs";
 
 generate_bindings :: (args: [] string) -> bool {
     compile        := !array_find(args, "-no_compile");
+    no_openssl     :=  array_find(args, "-no_openssl");
     compile_debug  :=  array_find(args, "-debug");
     build_shared   :=  array_find(args, "-shared");   // libhs.so / .dylib instead of libhs.a
 
@@ -63,6 +64,7 @@ generate_bindings :: (args: [] string) -> bool {
         array_add(*configure, "cmake", "-S", SOURCE_PATH, "-B", build_dir);
         array_add(*configure, tprint("-DCMAKE_BUILD_TYPE=%", ifx compile_debug then "Debug" else "Release"));
         array_add(*configure, ifx build_shared then "-DBUILD_SHARED_LIBS=ON" else "-DBUILD_SHARED_LIBS=OFF");
+        array_add(*configure, ifx no_openssl   then "-DHS_DISABLE_HMAC=ON"   else "-DHS_DISABLE_HMAC=OFF");
         array_add(*configure, "-DFAT_RUNTIME=OFF");
         array_add(*configure, "-DCMAKE_POSITION_INDEPENDENT_CODE=ON");
 
@@ -114,10 +116,10 @@ generate_bindings :: (args: [] string) -> bool {
         array_add(*extra_clang_arguments, "-I", tprint("%/src", SOURCE_PATH));
 
         generate_library_declarations = false;
-        footer = tprint(
-            ifx build_shared then FOOTER_SHARED else FOOTER_STATIC,
-            to_lower_copy(LIB_BASE_NAME), LIB_BASE_NAME
-        );
+
+        footer = tprint(ifx build_shared FOOTER_SHARED else FOOTER_STATIC,
+                        to_lower_copy(LIB_BASE_NAME), LIB_BASE_NAME,
+                        ifx no_openssl then "" else OPENSSL_FOOTER);
 
         log_stripped_declarations = false;
         generate_compile_time_struct_checks = false;
@@ -160,20 +162,28 @@ run :: (command: .. string, working_directory := "") -> bool {
     return true;
 }
 
-// libhs.a is C++ and uses OpenSSL, and a static archive doesn't carry those dependencies...
-// link_always stops JAI from dropping libraries that no foreign procedure references directly.
+OPENSSL_FOOTER :: #string END
+
+    libcrypto :: #library,no_dll,link_always "linux/libcrypto";
+
+    // libcrypto depends on these...
+    libz      :: #library,no_dll,link_always "linux/libz";
+    libzstd   :: #library,no_dll,link_always "linux/libzstd";
+END
+
 FOOTER_STATIC :: #string END
 
+// link_always stops JAI from dropping libraries that no foreign procedure references directly.
 #if OS == .LINUX {
     %1 :: #library,no_dll "linux/%2";
-    libstdcpp :: #system_library,link_always "libstdc++";
-    libcrypto :: #system_library,link_always "libcrypto";
+    libstdcpp :: #library,no_dll,link_always "linux/libstdc++";
+    libgcc_eh :: #library,no_dll,link_always "linux/libgcc_eh";
+    libgcc    :: #library,no_dll,link_always "linux/libgcc";
     libm      :: #system_library,link_always "libm";
-    libgcc_s  :: #system_library,link_always "libgcc_s";
+    %3
 } else #if OS == .MACOS {
     %1 :: #library,no_dll "macos/%2";
     libcpp    :: #system_library,link_always "libc++";
-    libcrypto :: #system_library,link_always "libcrypto";
 } else {
     #assert false;
 }
@@ -185,8 +195,13 @@ FOOTER_SHARED :: #string END
 
 #if OS == .LINUX {
     %1 :: #library "linux/%2";
+    libcpp    :: #system_library,link_always "libstdc++";
+    libm      :: #system_library,link_always "libm";
+    libgcc_s  :: #system_library,link_always "libgcc_s";
+    %3
 } else #if OS == .MACOS {
     %1 :: #library "macos/%2";
+    libcpp    :: #system_library,link_always "libc++";
 } else {
     #assert false;
 }

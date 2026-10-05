@@ -4,6 +4,13 @@ Jai bindings for [Hyperscan](https://github.com/intel/hyperscan), Intel's high-p
 
 The bindings are generated from Hyperscan's public headers (`hs_common.h`, `hs_compile.h`, `hs_runtime.h`) with Jai's `Bindings_Generator`, and `generate.jai` also builds the library from source using CMake.
 
+## This uses a Hyperscan fork
+
+The `hyperscan-intel` submodule is my fork (https://github.com/rakivo/hyperscan) that adds a *HS_DISABLE_HMAC* CMake option (default `OFF`), that stubs the HMAC calls out and drops the OpenSSL dependency. `generate.jai` exposes it via `-no_openssl`.
+
+With `-no_openssl`, databases carry no integrity data and the verify functions
+always succeed. That is fine if you don't care about those, for instance if you only compile and scan in the same process.
+
 ## Platform support
 
 | Platform        | Status                                                                 |
@@ -28,7 +35,7 @@ The library is built with `-march=native`, so **the resulting binary is tuned fo
    * CMake, and a C and C++ compiler
    * [Boost](https://www.boost.org/) headers (1.57 or newer). Only the headers are needed, e.g. `libboost-dev` on Debian/Ubuntu. If they are not in a standard location, pass `-boost=<path>` below.
    * [Ragel](https://www.colm.net/open-source/ragel/) (e.g. the `ragel` package)
-   * OpenSSL development files (`libcrypto`), because the static footer links it
+   * OpenSSL development files (`libcrypto`, `libz`, `libzstd`). Not needed with `-no_openssl`.
 
 3. Build the library and generate the bindings, from this directory:
 
@@ -50,6 +57,7 @@ Pass these after the `-` that separates them from the compiler's own arguments:
 | `-no_compile`   | Skip building the library and only regenerate `bindings.jai`           |
 | `-boost=<path>` | Passed to CMake as `BOOST_ROOT`                                        |
 | `-jobs=<n>`     | Parallel compile jobs. Default is half your cores. Hyperscan compiles use a lot of RAM, so use `-jobs=1` or `-jobs=2` on a machine with not-so-much RAM. |
+| `-no_openssl`   | Build the fork with `HS_DISABLE_HMAC=ON`: no OpenSSL, no `libcrypto`, `libz` or `libzstd` dependency, no database integrity checks. Recommended unless you serialize databases. |
 
 `bindings.jai` is regenerated on every run, and its footer depends on whether you built static or shared. Run `generate.jai` in the mode you intend to link.
 

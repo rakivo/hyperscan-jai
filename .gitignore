@@ -1,7 +1,3 @@
 .build
 *.o
-*.a
-*.so
-*.dylib
-*.dll
-*.lib
+libhs*
