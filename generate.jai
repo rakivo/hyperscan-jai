@@ -31,13 +31,17 @@ generate_bindings :: (args: [] string) -> bool {
     no_openssl     :=  array_find(args, "-no_openssl");
     compile_debug  :=  array_find(args, "-debug");
     build_shared   :=  array_find(args, "-shared");   // libhs.so / .dylib instead of libhs.a
+    fat_runtime    :=  array_find(args, "-fat");      // Linux only
+
+    cpu         := "haswell";
+    for args if begins_with(it, "-cpu=") cpu = slice(it, 5);
 
     boost_root: string;
     jobs := max(get_number_of_processors() / 2, 1);   // Hyperscan compiles are RAM-hungry, so keep this lower by default.
     for args {
-        if begins_with(it, "-boost=") boost_root = slice(it, 7, it.count - 7);
+        if begins_with(it, "-boost=") boost_root = slice(it, 7);
         if begins_with(it, "-jobs=") {
-            n, ok := to_integer(slice(it, 6, it.count - 6));
+            n, ok := to_integer(slice(it, 6));
             if ok && n > 0 jobs = xx n;
         }
     }
@@ -65,7 +69,12 @@ generate_bindings :: (args: [] string) -> bool {
         array_add(*configure, tprint("-DCMAKE_BUILD_TYPE=%", ifx compile_debug then "Debug" else "Release"));
         array_add(*configure, ifx build_shared then "-DBUILD_SHARED_LIBS=ON" else "-DBUILD_SHARED_LIBS=OFF");
         array_add(*configure, ifx no_openssl   then "-DHS_DISABLE_HMAC=ON"   else "-DHS_DISABLE_HMAC=OFF");
-        array_add(*configure, "-DFAT_RUNTIME=OFF");
+        if fat_runtime {
+            array_add(*configure, "-DFAT_RUNTIME=ON");
+            array_add(*configure, "-DBUILD_AVX512=ON");
+        } else {
+            array_add(*configure, "-DFAT_RUNTIME=OFF");
+        }
         array_add(*configure, "-DCMAKE_POSITION_INDEPENDENT_CODE=ON");
 
         // Hyperscan's CMakeLists declares a very old minimum version, which CMake 4.x rejects.
@@ -216,3 +225,7 @@ END
 #import "File_Utilities";
 #import "Process";
 #import "String";
+
+slice :: inline (s: string, index: int) -> string {
+    return slice(s, index, s.count - index);
+}
