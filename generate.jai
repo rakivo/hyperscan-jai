@@ -74,6 +74,8 @@ generate_bindings :: (args: [] string) -> bool {
             array_add(*configure, "-DBUILD_AVX512=ON");
         } else {
             array_add(*configure, "-DFAT_RUNTIME=OFF");
+            array_add(*configure, tprint("-DGNUCC_ARCH=%", cpu));
+            array_add(*configure, tprint("-DTUNE_FLAG=%",  cpu));
         }
         array_add(*configure, "-DCMAKE_POSITION_INDEPENDENT_CODE=ON");
 
